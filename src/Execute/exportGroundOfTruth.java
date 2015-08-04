@@ -27,7 +27,7 @@ public class exportGroundOfTruth {
         int cluster_col;
         String splitby;
         if(DB.equals("CORA")){
-        	cluster_col=17;
+        	cluster_col=18;
         	splitby="\\|";
         }
         else{

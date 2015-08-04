@@ -85,14 +85,14 @@ public class semTree {
 		return sigs;
 	}
 	public static void main(String[] args) throws FileNotFoundException{
-//		semTree st=new semTree("tree_cora.txt");
-//		for(String node:st.leaveMap.keySet()){
-//			HashSet<String> temp=st.leaveMap.get(node);
-//			System.out.println(node+": ");
-//			for(String t:temp){
-//				System.out.print(t+" ");
-//			}
-//			System.out.println();
-//		}
+		semTree st=new semTree("tree_CORA2.txt");
+		for(String node:st.leaveMap.keySet()){
+			HashSet<String> temp=st.leaveMap.get(node);
+			System.out.println(node+": ");
+			for(String t:temp){
+				System.out.print(t+" ");
+			}
+			System.out.println();
+		}
 	}
 }

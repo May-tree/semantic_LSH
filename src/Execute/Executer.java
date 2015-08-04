@@ -5,6 +5,7 @@ import java.io.IOException;
 
 public class Executer {
 	public static int k;
+	public static int tree_style;
 	public static int l;
 	public static int n;
 	public static String DB;
@@ -15,12 +16,13 @@ public class Executer {
     	DB=args[0];
     	path=args[1];
     	tree_path=args[2];
-    	k=Integer.parseInt(args[3]);
-    	l=Integer.parseInt(args[4]);
-    	semantic_Switch=Integer.parseInt(args[5]);
-    	n=Integer.parseInt(args[6]);
-    	int inputsize=Integer.parseInt(args[7]);
-    	infoRecorder ir=new infoRecorder(DB,path,tree_path,k,l,semantic_Switch,n,inputsize);
+    	tree_style=Integer.parseInt(args[3]);;
+    	k=Integer.parseInt(args[4]);
+    	l=Integer.parseInt(args[5]);
+    	semantic_Switch=Integer.parseInt(args[6]);
+    	n=Integer.parseInt(args[7]);
+    	int inputsize=Integer.parseInt(args[8]);
+    	infoRecorder ir=new infoRecorder(DB,path,tree_path,tree_style,k,l,semantic_Switch,n,inputsize);
     	ir.settingDisplay();
     	ir.timeRecord();
     }

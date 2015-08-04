@@ -215,16 +215,6 @@ public class LSH {
                 noncandidatePairs.add(pair);
             }
         }
-//		for(HashSet<Integer> Pair:candidatePairs){
-//			ArrayList<Integer> id=new ArrayList<Integer>();
-//			for(int element:Pair){
-//				id.add(element);
-//			}
-//			double simi=collectionOperator.SetSimi(importFromDatabase.recordList.get(id.get(0)), importFromDatabase.recordList.get(id.get(1)), 4);
-//			if(simi<0.3){
-//				System.out.println("opps!"+id+":"+simi);
-//			}
-//		}
         fps=noncandidatePairs;
         Np = candidatePairs.size();
         Nbd = noncandidatePairs.size()+Np;

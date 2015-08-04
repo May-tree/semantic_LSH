@@ -186,15 +186,15 @@ public class CollectionOperator {
         return noSpace;
     }
 
-//    public static HashSet<String> shingle(String doc, int gramFactor) {
-//        String[] noSpace = rmSpace(doc);
-//        HashSet<String> globalShingles = new HashSet<>();
-//        for (String noSpace1 : noSpace) {
-//            globalShingles.addAll(naiveshingle(noSpace1, gramFactor));
-//        }
-//        return globalShingles;
-//    }
-     public static HashSet<String> shingle(String doc, int gramFactor) {
+    public static HashSet<String> shingle(String doc, int gramFactor) {
+        String[] noSpace = rmSpace(doc);
+        HashSet<String> globalShingles = new HashSet<String>();
+        for (String noSpace1 : noSpace) {
+            globalShingles.addAll(naiveshingle(noSpace1, gramFactor));
+        }
+        return globalShingles;
+    }
+     public static HashSet<String> shingleNC(String doc, int gramFactor) {
         String[] noSpace = rmSpace(doc);
         HashSet<String> globalShingles = new HashSet<String>();
         for (String noSpace1 : noSpace) {
@@ -202,14 +202,6 @@ public class CollectionOperator {
         }
         return globalShingles;
     }
-//    public static HashSet<String> shingle(String doc, int gramFactor) {
-//        HashSet<String> docr = new HashSet<>();
-//        String temp = doc.trim().replaceAll("^ +| +$|( )+", "$1");
-//        for (int i = 0; i < temp.length() - gramFactor + 1; i++) {
-//            docr.add(temp.substring(i, i + gramFactor));
-//        }
-//        return docr;
-//    }
 
     public static int shinglenum(String doc, int gramFactor) {
 //		System.out.println(doc);

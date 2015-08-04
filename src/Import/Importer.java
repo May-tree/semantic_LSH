@@ -1,4 +1,5 @@
 package Import;
+import Functions.NaiveMap;
 import Functions.leaveMap;
 import Functions.semTree;
 
@@ -18,11 +19,12 @@ public class Importer {
     public HashSet<Integer> idset;
     public semTree sTree;
     public long mappingStart,mappingEnd,consTreeStart,consTreeEnd;
+    public int tree_style;
     public String path;
     public String tree_path;
     public int inputsize;
     public int Semantic_Switch;
-    public Importer(String DB,String path,String tree_path,int inputsize,int Semantic_Switch) throws ClassNotFoundException, FileNotFoundException, IOException{
+    public Importer(String DB,String path,String tree_path,int tree_style,int inputsize,int Semantic_Switch) throws ClassNotFoundException, FileNotFoundException, IOException{
     	recordList = new HashMap<Integer, String>();
     	this.Semantic_Switch=Semantic_Switch;
     	if(Semantic_Switch>0){
@@ -32,6 +34,7 @@ public class Importer {
         idset = new HashSet<Integer>();
         this.path=path;
         this.tree_path=tree_path;
+        this.tree_style=tree_style;
         if(DB.equals("CORA")){
         	CoraImport(inputsize);
         }
@@ -62,14 +65,15 @@ public class Importer {
             int id=Integer.valueOf(line[0]);
             if(Semantic_Switch>0){
 	            String[] props=new String[2];
-	            props[0]=line[4];
-	            props[1]=line[5];
+	            props[0]=line[4];//gender
+	            props[1]=line[5];//race
 	            
-	            // mapping to leaves
-	            HashSet<String> leaveSet=leaveMap.getNCVoterLeaves(props);
+	            //new signatures
+//	            HashSet<String> leaveSet=leaveMap.getNCVoterLeaves(props,tree_style);	            
+//	            ArrayList<Integer> semanticSig1=sTree.getSigs(leaveSet);
 	            
-	            // get signatures
-	            ArrayList<Integer> semanticSig1=sTree.getSigs(leaveSet);
+	            //old signature
+	            ArrayList<Integer> semanticSig1=NaiveMap.NMap(props[1].charAt(0), props[0].charAt(0));
 	            semanticSig.put(id, semanticSig1);
             }
             recordList.put(id,longString.toString());
@@ -103,25 +107,23 @@ public class Importer {
         }
         for(int i=0;i<size;i++){
         	String origin=br.readLine();
-        	origin=origin.substring(0,origin.length()-23);
+//        	origin=origin.substring(0,origin.length()-23);
             String[] line=origin.replace("\"", "").split("\\|");
             StringBuilder longString = new StringBuilder();
-            longString.append(line[1]); //title
+            longString.append(line[2]); //title
             longString.append(" ");
-            if(line.length>18){
-            	longString.append(line[18]); //authours
-            }
-            int cluster=Integer.valueOf(line[17]); //cluster id
+            longString.append(line[1]); //authours
+            int cluster=Integer.valueOf(line[18]); //cluster id
             int id=Integer.valueOf(line[0]); //id
             if(Semantic_Switch>0){
             	String[] props=new String[6];
-                props[0]=line[9]; //tech
-                props[1]=line[15]; //type
-                props[2]=line[4]; //note
-                props[3]=line[6]; //journal
-                props[4]=line[10]; //institution
-                props[5]=line[11]; //booktitle
-                HashSet<String> leaveSet=leaveMap.getCoraLeaves(props);
+                props[0]=line[10]; //tech
+                props[1]=line[16]; //type
+                props[2]=line[5]; //note
+                props[3]=line[7]; //journal
+                props[4]=line[11]; //institution
+                props[5]=line[12]; //booktitle
+                HashSet<String> leaveSet=leaveMap.getCoraLeaves(props,tree_style);
                 ArrayList<Integer> semanticSig1=sTree.getSigs(leaveSet);
                 semanticSig.put(id, semanticSig1);
             }

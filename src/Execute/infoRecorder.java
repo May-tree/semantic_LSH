@@ -10,6 +10,7 @@ import java.util.List;
 import Functions.CollectionOperator;
 import Functions.LSH;
 import Functions.MinHash;
+import Functions.MinHash_Old;
 import Import.Importer;
 
 public class infoRecorder {
@@ -19,9 +20,10 @@ public class infoRecorder {
 	private int k;
 	private int l;
 	private int n;
+	private int tree_style;
 	private int inputsize;
 	private int semantic_Switch;
-	private int gramFactor=2;
+	private int gramFactor;
 	private long minHashStart,minHashEnd,minHashStartM,minHashEndM,lshStart,lshEnd,lshStartM,lshEndM;
 	private long lshOEnd,lshOStart,lshNEnd,lshNStart,lshOEndM,lshOStartM,lshNEndM,lshNStartM;
 	public void settingDisplay(){
@@ -38,7 +40,8 @@ public class infoRecorder {
     	System.out.println("l: "+l);
     	System.out.println();
 	}
-	public infoRecorder(String DB,String path,String tree_path,int k,int l,int semantic_Switch,int n,int inputsize){
+	public infoRecorder(String DB,String path,String tree_path,int tree_style,int k,int l,int semantic_Switch,int n,int inputsize){
+		this.tree_style=tree_style;
 		this.DB=DB;
 		this.path=path;
 		this.tree_path=tree_path;
@@ -47,9 +50,18 @@ public class infoRecorder {
 		this.n=n;
 		this.semantic_Switch=semantic_Switch;
 		this.inputsize=inputsize;
+		if(DB.equals("CORA")){
+			gramFactor=4;
+		}
+		else{
+			gramFactor=2;
+		}
 	}
 	public void timeRecord() throws ClassNotFoundException, FileNotFoundException, IOException{
-		Importer imp=new Importer(DB,path,tree_path,inputsize,semantic_Switch);
+		Importer imp=new Importer(DB,path,tree_path,tree_style,inputsize,semantic_Switch);
+		int size=imp.idset.size();
+		double dbsize=(double)size;
+		double numOfPairs = dbsize/10000 * (dbsize - 1) / 2;
         HashMap<Integer, HashSet<Integer>> originCluster = imp.originCluster;
         HashSet<HashSet<Integer>> originGlobalPair = CollectionOperator.pairGraph(originCluster);
         int Nd = originGlobalPair.size();
@@ -59,16 +71,15 @@ public class infoRecorder {
         HashMap<Integer, String> recordList = imp.recordList;
         HashMap<Integer, ArrayList<Integer>> semanList = imp.semanticSig;
         
-        
-        
-
-        
         System.out.println(inputsize+" records has been imported");
         Runtime mruntime = Runtime.getRuntime();
         System.gc();
         minHashStartM=mruntime.totalMemory()-mruntime.freeMemory();
         minHashStart = System.currentTimeMillis();
-        MinHash mHasher = new MinHash(gramFactor, k * l);
+        System.out.println("gramFactor:"+gramFactor);
+        
+        MinHash mHasher = new MinHash(gramFactor, k * l,DB);
+        
         HashMap<Integer, ArrayList<Integer>> sigList = new HashMap<Integer, ArrayList<Integer>>();
         for (int key : recordList.keySet()) {
             sigList.put(key, mHasher.sig(recordList.get(key)));
@@ -85,7 +96,7 @@ public class infoRecorder {
         Runtime cruntime = Runtime.getRuntime();
         System.gc();
         lshStartM=cruntime.totalMemory()-cruntime.freeMemory();
-        LSH lsher = new LSH(k, l, n);
+        LSH lsher = new LSH(k, l,n);
         lshBuckets = lsher.lshBucket(sigList);
         System.out.println("LSH is done.");
         System.out.println();
@@ -101,12 +112,29 @@ public class infoRecorder {
         Np = LSH.Np; //number of true positives from lSH blocking
         Nb = LSH.Nb; //number of pairs in lsh blocking considering reduncencies
         Nbd= LSH.Nbd; //number of unique pairs in lsh blocking 
+        double PC = (double) Np / (double) Nd;
+        double PQ = (double) Np / (double) Nbd;
+        double PR= 1-(double) Nbd / (double) Nb;
+//        System.out.println();
+//        System.out.println("This part is for debugging");
+//        System.out.println("Nbd: "+(double) Nbd);
+//        System.out.println("numOfPairs: "+(double) numOfPairs);
+//        System.out.println("Nbd/numOfPairs: "+(double) Nbd / (double) numOfPairs);
+//        System.out.println();
+        double RR = 1 - (double) Nbd/10000 / (double) numOfPairs;
+        double FM = (double) (PQ * PC) / (double) (PQ + PC);
         System.out.println("After pure LSH:");
         System.out.println("pairs in ground_of_truth: "+Nd);
         System.out.println("true positives: "+Np);
         System.out.println("unique pairs: "+Nbd);
         System.out.println("no of pairs: "+Nb);
+        System.out.println("PC: "+PC);
+        System.out.println("PR: "+PR);
+        System.out.println("PQ: "+PQ);
+        System.out.println("RR: "+RR);
+        System.out.println("FM: "+FM);
         System.out.println();
+        
         if(semantic_Switch==1){
         	Runtime oruntime = Runtime.getRuntime();
         	System.gc();
@@ -122,12 +150,28 @@ public class infoRecorder {
             LSH.obtainNp(binaryBlockSets, originGlobalPair);
             Np = LSH.Np; //number of true positives from lSH blocking
             Nb = LSH.Nb; //number of pairs in lsh blocking considering reduncencies
-            Nbd= LSH.Nbd; //number of unique pairs in lsh blocking 
+            Nbd= LSH.Nbd; //number of unique pairs in lsh blocking
+            PC = (double) Np / (double) Nd;
+            PQ = (double) Np / (double) Nbd;
+            PR= 1-(double) Nbd / (double) Nb;
+//            System.out.println();
+//            System.out.println("This part is for debugging");
+//            System.out.println("Nbd: "+(double) Nbd);
+//            System.out.println("numOfPairs: "+(double) numOfPairs);
+//            System.out.println("Nbd/numOfPairs: "+(double) Nbd / (double) numOfPairs);
+//            System.out.println();
+            RR = 1 - (double) Nbd/10000 / (double) numOfPairs;
+            FM = (double) (PQ * PC) / (double) (PQ + PC);
             System.out.println("After incorporating Logical OR Semantics:");
             System.out.println("pairs in ground_of_truth: "+Nd);
             System.out.println("true positives: "+Np);
             System.out.println("unique pairs: "+Nbd);
             System.out.println("no of pairs: "+Nb);
+            System.out.println("PC: "+PC);
+            System.out.println("PR: "+PR);
+            System.out.println("PQ: "+PQ);
+            System.out.println("RR: "+RR);
+            System.out.println("FM: "+FM);
             System.out.println();
         }
         if(semantic_Switch==2){
@@ -146,11 +190,27 @@ public class infoRecorder {
             Np = LSH.Np; //number of true positives from lSH blocking
             Nb = LSH.Nb; //number of pairs in lsh blocking considering reduncencies
             Nbd= LSH.Nbd; //number of unique pairs in lsh blocking 
+            PC = (double) Np / (double) Nd;
+            PQ = (double) Np / (double) Nbd;
+            PR= 1-(double) Nbd / (double) Nb;
+//            System.out.println();
+//            System.out.println("This part is for debugging");
+//            System.out.println("Nbd: "+(double) Nbd);
+//            System.out.println("numOfPairs: "+(double) numOfPairs);
+//            System.out.println("Nbd/numOfPairs: "+(double) Nbd / (double) numOfPairs);
+//            System.out.println();
+            RR = 1 - (double) Nbd/10000 / (double) numOfPairs;
+            FM = (double) (PQ * PC) / (double) (PQ + PC);
             System.out.println("After incorporating Logical AND Semantics:");
             System.out.println("pairs in ground_of_truth: "+Nd);
             System.out.println("true positives: "+Np);
             System.out.println("unique pairs: "+Nbd);
             System.out.println("no of pairs: "+Nb);
+            System.out.println("PC: "+PC);
+            System.out.println("PR: "+PR);
+            System.out.println("PQ: "+PQ);
+            System.out.println("RR: "+RR);
+            System.out.println("FM: "+FM);
             System.out.println();
         }
         System.out.println("Runtime:");
